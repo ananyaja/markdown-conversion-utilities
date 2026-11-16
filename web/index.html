@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+%%html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Conversion Utilities</title>
+    <style>
+        :root {
+            --bg-color: #f4f5f7;
+            --card-bg: #ffffff;
+            --text-color: #24292e;
+            --sub-text: #586069;
+            --border-color: #d1d5da;
+            --btn-bg: #2ea44f;
+            --btn-hover: #2c974b;
+            --tab-active-bg: #0366d6;
+            --tab-inactive-bg: #e1e4e8;
+            --tab-inactive-text: #586069;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --text-color: #c9d1d9;
+            --sub-text: #8b949e;
+            --border-color: #30363d;
+            --btn-bg: #238636;
+            --btn-hover: #2ea043;
+            --tab-active-bg: #1f6feb;
+            --tab-inactive-bg: #21262d;
+            --tab-inactive-text: #8b949e;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .blog-container {
+            background-color: var(--card-bg);
+            max-width: 800px;
+            width: 100%;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            box-sizing: border-box;
+        }
+
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 26px;
+            margin: 0;
+            color: var(--text-color);
+            letter-spacing: -0.5px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 6px 12px;
+            font-size: 13px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .theme-toggle:hover {
+            background-color: var(--border-color);
+        }
+
+        /* Tab Navigation Styles */
+        .tab-nav {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .tab-btn {
+            background-color: var(--tab-inactive-bg);
+            color: var(--tab-inactive-text);
+            border: none;
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.15s, color 0.15s;
+        }
+
+        .tab-btn.active {
+            background-color: var(--tab-active-bg);
+            color: #ffffff;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        p.subtitle {
+            color: var(--sub-text);
+            font-size: 15px;
+            margin-top: 0;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        textarea {
+            width: 100%;
+            height: 320px;
+            padding: 14px;
+            font-family: monospace;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            resize: vertical;
+            line-height: 1.4;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #0366d6;
+            box-shadow: 0 0 0 3px rgba(3, 102, 214, 0.1);
+        }
+
+        button.action-btn {
+            background-color: var(--btn-bg);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.15s;
+        }
+
+        button.action-btn:hover {
+            background-color: var(--btn-hover);
+        }
+
+        pre {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 16px;
+            overflow-x: auto;
+            font-family: monospace;
+            font-size: 13px;
+            color: var(--text-color);
+            margin-top: 20px;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body data-theme="light">
+
+    <div class="blog-container">
+        <div class="header-container">
+            <h2>Markdown Utilities</h2>
+            <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
+        </div>
+
+        <!-- Tab Buttons -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('csv')">CSV to Markdown</button>
+            <button class="tab-btn" onclick="switchTab('text')">Text Chunks to Markdown</button>
+        </div>
+
+        <!-- Tab 1: CSV Converter -->
+        <div id="csvTab" class="tab-content active">
+            <p class="subtitle">Paste your raw CSV text below to instantly generate a clean Markdown table.</p>
+            <textarea id="csvInput" placeholder="Name,Age,Role&#10;Alice,30,Engineer&#10;Bob,25,Designer"></textarea>
+            <br>
+            <button class="action-btn" onclick="convertCSV()">Convert CSV</button>
+            <pre id="csvOutput">Your markdown table output will appear here...</pre>
+            <button id="csvCopyBtn" class="action-btn" onclick="copyToClipboard('csvOutput', 'csvCopyBtn')" style="background-color: #0366d6; display: none;">Copy Markdown</button>
+        </div>
+
+        <!-- Tab 2: Text Chunk Converter -->
+        <div id="textTab" class="tab-content">
+            <p class="subtitle">Paste your 3-line chunk text below (Time Block, Focus Area, Core Activity) to convert it into a table.</p>
+            <textarea id="textInput" placeholder="07:30 AM – 08:00 AM&#10;Morning Routine & Chess&#10;Daily chess tactical analysis..."></textarea>
+            <br>
+            <button class="action-btn" onclick="convertText()">Convert Text Chunks</button>
+            <pre id="textOutput">Your markdown table output will appear here...</pre>
+            <button id="textCopyBtn" class="action-btn" onclick="copyToClipboard('textOutput', 'textCopyBtn')" style="background-color: #0366d6; display: none;">Copy Markdown</button>
+        </div>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const toggleBtn = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'light') {
+                body.setAttribute('data-theme', 'dark');
+                toggleBtn.textContent = '☀️ Light Mode';
+            } else {
+                body.setAttribute('data-theme', 'light');
+                toggleBtn.textContent = '🌙 Dark Mode';
+            }
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            if (tabName === 'csv') {
+                document.getElementById('csvTab').classList.add('active');
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            } else {
+                document.getElementById('textTab').classList.add('active');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            }
+        }
+
+        function parseCSVLine(text) {
+            let row = [];
+            let inQuotes = false;
+            let currentVal = '';
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i];
+                let nextChar = text[i+1];
+                if (char === '"') {
+                    if (inQuotes && nextChar === '"') { currentVal += '"'; i++; }
+                    else { inQuotes = !inQuotes; }
+                } else if (char === ',' && !inQuotes) {
+                    row.push(currentVal.trim());
+                    currentVal = '';
+                } else {
+                    currentVal += char;
+                }
+            }
+            row.push(currentVal.trim());
+            return row;
+        }
+
+        function convertCSV() {
+            const rawText = document.getElementById('csvInput').value.trim();
+            const outputElement = document.getElementById('csvOutput');
+            const copyBtn = document.getElementById('csvCopyBtn');
+
+            if (!rawText) {
+                outputElement.textContent = "Please paste some CSV text first.";
+                copyBtn.style.display = 'none';
+                return;
+            }
+
+            const lines = rawText.split(/\r?\n/).filter(line => line.trim() !== '');
+            let markdownRows = lines.map(line => parseCSVLine(line));
+
+            if (markdownRows.length === 0) return;
+
+            let header = markdownRows[0];
+            let colCount = header.length;
+            let mdLines = [];
+
+            mdLines.push('| ' + header.join(' | ') + ' |');
+            mdLines.push('| ' + Array(colCount).fill(':---').join(' | ') + ' |');
+
+            for (let i = 1; i < markdownRows.length; i++) {
+                let row = markdownRows[i];
+                while (row.length < colCount) row.push('');
+                mdLines.push('| ' + row.slice(0, colCount).join(' | ') + ' |');
+            }
+
+            outputElement.textContent = mdLines.join('\n');
+            copyBtn.style.display = 'inline-block';
+        }
+
+        function convertText() {
+            const rawData = document.getElementById('textInput').value;
+            const outputElement = document.getElementById('textOutput');
+            const copyBtn = document.getElementById('textCopyBtn');
+
+            const lines = rawData.split(/\r?\n/).map(line => line.trim()).filter(line => line !== '');
+
+            if (lines.length < 3) {
+                outputElement.textContent = "Please provide enough lines (chunks of 3: Time Block, Focus Area, Activity).";
+                copyBtn.style.display = 'none';
+                return;
+            }
+
+            let mdLines = [
+                "| Time Block | Focus Area | Core Activity & Deliverables |",
+                "| :--- | :--- | :--- |"
+            ];
+
+            for (let i = 0; i <= lines.length - 3; i += 3) {
+                let timeBlock = lines[i];
+                let focusArea = lines[i+1];
+                let description = lines[i+2].replace(/"/g, '');
+                mdLines.push(`| ${timeBlock} | ${focusArea} | ${description} |`);
+            }
+
+            outputElement.textContent = mdLines.join('\n');
+            copyBtn.style.display = 'inline-block';
+        }
+
+        function copyToClipboard(elementId, btnId) {
+            const textToCopy = document.getElementById(elementId).textContent;
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                const btn = document.getElementById(btnId);
+                const originalText = btn.textContent;
+                btn.textContent = 'Copied!';
+                setTimeout(() => { btn.textContent = originalText; }, 2000);
+            });
+        }
+    </script>
+
+</body>
+</html>
